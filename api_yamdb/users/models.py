@@ -5,6 +5,7 @@ from .validators import validate_username
 NAME_MAX_LENGTH: int = 150
 ROLE_MAX_LENGTH: int = 20
 EMAIL_MAX_LENGTH: int = 254
+CODE_MAX_LENGTH: int = 255
 
 
 class User(AbstractUser):
@@ -37,6 +38,12 @@ class User(AbstractUser):
         max_length=ROLE_MAX_LENGTH
     )
     email = models.EmailField(unique=True, max_length=EMAIL_MAX_LENGTH)
+    confirmation_code = models.CharField(
+        max_length=CODE_MAX_LENGTH,
+        null=True,
+        blank=False,
+        default='XXXX'
+    )
 
     class Meta:
         constraints = [
