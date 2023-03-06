@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django.forms import ValidationError
 from rest_framework import serializers
@@ -53,11 +54,16 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         many=False,
         required=True
     )
+    rating = serializers.SerializerMethodField()
+
+    def get_rating(self, obj):
+        rating = obj.reviews.aggregate(Avg('score', default=0))
+        return rating.get('score__avg')
 
     class Meta:
         model = Title
         fields = (
-            'id', 'name', 'year', 'description', 'genre', 'category'
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
 
     def validate_year(self, year):
