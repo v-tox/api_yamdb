@@ -98,7 +98,7 @@ class Review(models.Model):
 
     def __str__(self):
         return f'{self.title}, {self.score}, {self.author}'
-    
+
 
 class Comment(models.Model):
     """Модель комментария."""
