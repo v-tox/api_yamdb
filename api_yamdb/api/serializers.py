@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.db.models import Avg
 from django.forms import ValidationError
 from rest_framework import serializers
 
@@ -59,6 +60,7 @@ class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         fields = ('name', 'slug')
+        lookup_field = 'slug'
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
@@ -96,6 +98,7 @@ class TitleViewSerializer(serializers.ModelSerializer):
     category = CategorySerializer(required=True,)
     rating = serializers.SerializerMethodField()
 
+
     class Meta:
         model = Title
         fields = (
@@ -104,6 +107,14 @@ class TitleViewSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
+        
+        
+    def get_rating(self, obj):
+        """Подсчет рейтинга произведения."""
+        if obj.reviews.count() == 0:
+            return None
+        r = Review.objects.filter(title=obj).aggregate(rating=Avg('score'))
+        return r['rating']
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -138,7 +149,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = (
-            'id', 'text', 'author', 'score', 'pub_date'
+            'id', 'text', 'author', 'score', 'pub_date', 'title'
         )
         model = Review
 
@@ -154,6 +165,6 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = (
-            'id', 'text', 'author', 'pub_date'
+            'id', 'text', 'author', 'pub_date', 'review'
         )
         model = Comment
