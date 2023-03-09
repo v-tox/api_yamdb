@@ -1,9 +1,10 @@
+import re
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 from django.forms import ValidationError
 from rest_framework import serializers
 
-from users.models import User
 from reviews.models import (Category,
                             Genre,
                             Title,
@@ -12,10 +13,11 @@ from reviews.models import (Category,
                             Comment
                             )
 
+User = get_user_model()
+
 
 class UserSerializer(serializers.ModelSerializer):
     """Сериалайзер пользователя"""
-
     class Meta:
         model = User
         fields = (
@@ -26,9 +28,35 @@ class UserSerializer(serializers.ModelSerializer):
             'bio',
             'role',
         )
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=User.objects.all(), fields=['email', 'username']
+            )
+        ]
+
+    def username_validation(self, value):
+        pattern = re.compile('^[\\w]{3,}')
+        if re.match(pattern=pattern, string=value) is None:
+            raise serializers.ValidationError('Недопустимые символы.')
+        return value
+
+    def validate(self, data):
+        email = data.get('email', None)
+        if User.objects.filter(email=email).exists():
+            if data['username'] != User.objects.get(email=email).username:
+                raise serializers.ValidationError(
+                    'Этот email занят.'
+                )
+
+        return super().validate(data)
 
 
-class NewUserSerializer(serializers.Serializer):
+class MeRoleSerializer(UserSerializer):
+    class Meta(UserSerializer.Meta):
+        read_only_fields = ('role',)
+
+
+class NewUserSerializer(serializers.ModelSerializer):
     """Сериалайзер нового пользоватея"""
     class Meta:
         model = User
@@ -37,8 +65,18 @@ class NewUserSerializer(serializers.Serializer):
             'email'
         )
 
+    def username_validation(self, value):
+        pattern = re.compile('^[\\w]{3,}')
+        if re.match(pattern=pattern, string=value) is None:
+            raise serializers.ValidationError('Недопустимые символы.')
+        if value == 'me':
+            raise serializers.ValidationError(
+                'Нельзя использовать имя пользователя me.'
+            )
+        return value
 
-class TokenSerializer(serializers.Serializer):
+
+class TokenSerializer(serializers.ModelSerializer):
     """Сериалайзер JWT-токена."""
     username = serializers.CharField(required=True)
     confirmation_code = serializers.CharField(required=True)
@@ -98,7 +136,6 @@ class TitleViewSerializer(serializers.ModelSerializer):
     category = CategorySerializer(required=True,)
     rating = serializers.SerializerMethodField()
 
-
     class Meta:
         model = Title
         fields = (
@@ -107,8 +144,7 @@ class TitleViewSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
-        
-        
+
     def get_rating(self, obj):
         """Подсчет рейтинга произведения."""
         if obj.reviews.count() == 0:

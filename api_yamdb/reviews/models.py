@@ -36,7 +36,7 @@ class Category(models.Model):
     """Модель категорий"""
     name = models.CharField(max_length=200,)
     slug = models.SlugField(
-        max_length=100, unique=True,
+        max_length=50, unique=True,
     )
 
     def __str__(self) -> str:
@@ -46,7 +46,7 @@ class Category(models.Model):
 class Genre(models.Model):
     """Модель жанров"""
     name = models.CharField(max_length=200,)
-    slug = models.SlugField(max_length=100, unique=True,)
+    slug = models.SlugField(max_length=50, unique=True,)
 
     def __str__(self) -> str:
         return self.slug[:PER_PAGE]
