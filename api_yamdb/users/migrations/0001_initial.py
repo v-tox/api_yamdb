@@ -3,7 +3,6 @@
 import django.contrib.auth.models
 from django.db import migrations, models
 import django.utils.timezone
-import users.validators
 
 
 class Migration(migrations.Migration):
@@ -25,7 +24,7 @@ class Migration(migrations.Migration):
                 ('is_staff', models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status')),
                 ('is_active', models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
                 ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
-                ('username', models.CharField(max_length=150, unique=True, validators=[users.validators.validate_username])),
+                ('username', models.CharField(max_length=150, unique=True, )),
                 ('first_name', models.CharField(blank=True, max_length=150)),
                 ('last_name', models.CharField(blank=True, max_length=150)),
                 ('role', models.CharField(choices=[('user', 'user'), ('moderator', 'moderator'), ('admin', 'admin')], default='user', max_length=20)),
