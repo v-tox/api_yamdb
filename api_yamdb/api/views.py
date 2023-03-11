@@ -13,6 +13,7 @@ from rest_framework.permissions import (AllowAny,
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
 
+from .mixins import ListCreateDestroyViewSet
 from .filters import TitleFilter
 from .serializers import (UserSerializer,
                           NewUserSerializer,
@@ -27,13 +28,6 @@ from .serializers import (UserSerializer,
 from .permissions import (AdminModeratorAuthorOrReadOnly,
                           AdminOnly,
                           AdminOrReadOnly)
-
-
-class ListCreateDestroyViewSet(mixins.ListModelMixin,
-                               mixins.CreateModelMixin,
-                               mixins.DestroyModelMixin,
-                               viewsets.GenericViewSet):
-    pass
 
 
 class UserViewSet(viewsets.ModelViewSet):
