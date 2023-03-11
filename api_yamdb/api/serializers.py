@@ -5,6 +5,7 @@ from django.db.models import Avg
 from django.forms import ValidationError
 from rest_framework import serializers
 
+from api_yamdb.settings import START_YEAR
 from reviews.models import (Category,
                             Genre,
                             Title,
@@ -125,7 +126,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 
     def validate_year(self, year):
         """Валидация поля year."""
-        if not (1800 < year <= current_year()):
+        if not (START_YEAR < year <= current_year()):
             raise serializers.ValidationError('Год не подходит')
         return year
 
